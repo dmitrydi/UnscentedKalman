@@ -66,7 +66,7 @@ UKF::UKF() {
   lambda_ = 3 - n_x_;
 
   // augmanted sigma points storage
-  Xsig_aug_ = MatrxXd(n_aug_, 2*n_aug_ + 1);
+  Xsig_aug_ = MatrixXd(n_aug_, 2*n_aug_ + 1);
 
   // sigma points storage
   Xsig_pred_ = MatrixXd(n_x_, 2*n_aug_ + 1);
@@ -101,7 +101,7 @@ UKF::UKF() {
   VectorXd weights_ = VectorXd(2*n_aug_+1);
   weights_(0) = lambda_/(lambda_+n_aug_);
   for (int i=1; i<2*n_aug_+1; i++) {  
-    weights_(i) = 0.5/(n_aug_+lambda_)
+    weights_(i) = 0.5/(n_aug_+lambda_);
   }
 }
 
@@ -118,7 +118,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
-  const double time_conv = 1000000.
+  const double time_conv = 1000000.;
 
   if (!is_initialized_) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
@@ -142,10 +142,10 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   UKF::Prediction(delta_t);
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-    UKF::UpdateLidar(measurement_pack)
+    UKF::UpdateLidar(measurement_pack);
   }
   else if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-    UKF::UpdateRadar(measurement_pack)
+    UKF::UpdateRadar(measurement_pack);
   }
 }
 
@@ -161,9 +161,9 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
-  UKF::AugmentedSigmaPoints(Xsig_aug_);
-  UKF::SigmaPointPrediction(Xsig_pred_, delta_t);
-  UKF::PredictMeanAndCovariance(x_, P_);
+  UKF::AugmentedSigmaPoints(&Xsig_aug_);
+  UKF::SigmaPointPrediction(&Xsig_pred_, delta_t);
+  UKF::PredictMeanAndCovariance(&x_, &P_);
 }
 
 void UKF::PredictRadar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_rad_out) {
@@ -263,7 +263,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
-  PredictLidar(zpred_lidar_, S_lid_, Zsig_pred_lidar_);
+  PredictLidar(&zpred_lidar_, &S_lid_, &Zsig_pred_lidar_);
   VectorXd z = VectorXd(2);
   z << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1];
   //create matrix for cross correlation Tc
@@ -292,7 +292,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
-  PredictRadar(zpred_rad_, S_rad_, Zsig_pred_rad_);
+  PredictRadar(&zpred_rad_, &S_rad_, &Zsig_pred_rad_);
   VectorXd z = VectorXd(3);
   z << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], meas_package.raw_measurements_[2];
 
@@ -392,8 +392,11 @@ void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t) {
 }
 
 void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out) {
-  const double M_PI = 3.1415926535897932384626433832795;
-
+  //const double pi = 3.1415926535897932384626433832795;
+  VectorXd x;
+  MatrixXd P;
+  x = VectorXd(n_x_);
+  P = MatrixXd(n_x_, n_x_);
   //predicted state mean
   x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
