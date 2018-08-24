@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <cmath>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -30,6 +31,9 @@ public:
 
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
+
+  ///* augmented sigma points matrix
+  MatrixXd Xsig_aug_;
 
   ///* time when the state is true, in us
   long long time_us_;
@@ -91,17 +95,19 @@ public:
    */
   void Prediction(double delta_t);
 
-  /**
-   * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
-   */
+  void PredictRadar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_rad_out);
+
+  void PredictLidar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_lidar_out);
+
   void UpdateLidar(MeasurementPackage meas_package);
 
-  /**
-   * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
-   */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  void AugmentedSigmaPoints(MatrixXd* Xsig_aug_out);
+
+  void SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t);
+
+  void PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
 };
 
 #endif /* UKF_H */
