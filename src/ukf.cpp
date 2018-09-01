@@ -34,10 +34,10 @@ UKF::UKF() {
   // time_us_ is initialized during first call of ProcessMeasurement()
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 2;
+  std_a_ = 1;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 1;
+  std_yawdd_ = 0.1;
   
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
@@ -98,7 +98,7 @@ UKF::UKF() {
             0, std_laspy_*std_laspy_;
 
   // weight for sigma points
-  VectorXd weights_ = VectorXd(2*n_aug_+1);
+  weights_ = VectorXd(2*n_aug_+1);
   weights_(0) = lambda_/(lambda_+n_aug_);
   for (int i=1; i<2*n_aug_+1; i++) {  
     weights_(i) = 0.5/(n_aug_+lambda_);
@@ -119,8 +119,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   measurements.
   */
   const double time_conv = 1000000.;
-
   if (!is_initialized_) {
+    cout<<"Going to initialize.."<<endl;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       float rho, phi, px, py;
       rho = measurement_pack.raw_measurements_[0];
@@ -132,11 +132,11 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0, 0;
     }
-
     time_us_ = measurement_pack.timestamp_;
     is_initialized_ = true;
     return;
   }
+  cout<<"Initialized!"<<endl;
 
   double delta_t = (measurement_pack.timestamp_ - time_us_)/time_conv;
   UKF::Prediction(delta_t);
@@ -161,9 +161,17 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+  cout<<"Very init weights "<<weights_<<endl;
+  cout<<"Lambda "<<lambda_<<endl;
+  cout<<"Starting AugmentedSigmaPoints"<<endl;
   UKF::AugmentedSigmaPoints(&Xsig_aug_);
+  cout<<"AugmentedSigmaPoints finished"<<endl;
+  cout<<"Starting SigmaPointPrediction"<<endl;
   UKF::SigmaPointPrediction(&Xsig_pred_, delta_t);
+  cout<<"SigmaPointPrediction finished"<<endl;
+  cout<<"Starting PredictMeanAndCovariance"<<endl;
   UKF::PredictMeanAndCovariance(&x_, &P_);
+  cout<<"PredictMeanAndCovariance finished"<<endl;
 }
 
 void UKF::PredictRadar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_rad_out) {
@@ -395,14 +403,20 @@ void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out) {
   //const double pi = 3.1415926535897932384626433832795;
   VectorXd x;
   MatrixXd P;
+  cout<<"assigning x, P to their size"<<endl;
   x = VectorXd(n_x_);
   P = MatrixXd(n_x_, n_x_);
+  cout<<"x, P assigned"<<endl;
   //predicted state mean
+  cout<<"starting calculating x_mean"<<endl;
+  cout<<"n_aug_ "<<n_aug_<<endl;
+  cout<<"weights"<<weights_<<endl;
+  cout<<"Sigma points"<<Xsig_pred_<<endl;
   x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     x = x+ weights_(i) * Xsig_pred_.col(i);
   }
-
+  cout<<"x_mean calculated"<<endl;
   //predicted state covariance matrix
   P.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
