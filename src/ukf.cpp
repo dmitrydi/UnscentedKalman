@@ -120,7 +120,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   */
   const double time_conv = 1000000.;
   if (!is_initialized_) {
-    cout<<"Going to initialize.."<<endl;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       float rho, phi, px, py;
       rho = measurement_pack.raw_measurements_[0];
@@ -136,7 +135,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     is_initialized_ = true;
     return;
   }
-  cout<<"Initialized!"<<endl;
 
   double delta_t = (measurement_pack.timestamp_ - time_us_)/time_conv;
   UKF::Prediction(delta_t);
@@ -161,17 +159,9 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
-  cout<<"Very init weights "<<weights_<<endl;
-  cout<<"Lambda "<<lambda_<<endl;
-  cout<<"Starting AugmentedSigmaPoints"<<endl;
   UKF::AugmentedSigmaPoints(&Xsig_aug_);
-  cout<<"AugmentedSigmaPoints finished"<<endl;
-  cout<<"Starting SigmaPointPrediction"<<endl;
   UKF::SigmaPointPrediction(&Xsig_pred_, delta_t);
-  cout<<"SigmaPointPrediction finished"<<endl;
-  cout<<"Starting PredictMeanAndCovariance"<<endl;
   UKF::PredictMeanAndCovariance(&x_, &P_);
-  cout<<"PredictMeanAndCovariance finished"<<endl;
 }
 
 void UKF::PredictRadar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_rad_out) {
@@ -346,6 +336,8 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug_out) {
   }
   
   *Xsig_aug_out = Xsig_aug;
+  cout<<"Generated sigma points"<<endl;
+  cout<<Xsig_aug;
 }
 
 void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t) {
