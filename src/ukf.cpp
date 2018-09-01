@@ -119,6 +119,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   measurements.
   */
   const double time_conv = 1000000.;
+  int n_meas=0;
   if (!is_initialized_) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       float rho, phi, px, py;
@@ -133,6 +134,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     }
     time_us_ = measurement_pack.timestamp_;
     is_initialized_ = true;
+    n_meas += 1;
+    cout<<"Measurement number: "<<n_meas<<endl;
     return;
   }
 
@@ -145,6 +148,8 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   else if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     UKF::UpdateRadar(measurement_pack);
   }
+  n_meas += 1;
+  cout<<"Measurement number: "<<n_meas<<endl;
 }
 
 /**
@@ -395,20 +400,13 @@ void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out) {
   //const double pi = 3.1415926535897932384626433832795;
   VectorXd x;
   MatrixXd P;
-  cout<<"assigning x, P to their size"<<endl;
   x = VectorXd(n_x_);
   P = MatrixXd(n_x_, n_x_);
-  cout<<"x, P assigned"<<endl;
   //predicted state mean
-  cout<<"starting calculating x_mean"<<endl;
-  cout<<"n_aug_ "<<n_aug_<<endl;
-  cout<<"weights"<<weights_<<endl;
-  cout<<"Sigma points"<<Xsig_pred_<<endl;
   x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     x = x+ weights_(i) * Xsig_pred_.col(i);
   }
-  cout<<"x_mean calculated"<<endl;
   //predicted state covariance matrix
   P.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
