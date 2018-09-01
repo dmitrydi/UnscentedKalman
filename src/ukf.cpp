@@ -136,6 +136,7 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
     is_initialized_ = true;
     n_meas += 1;
     cout<<"Measurement number: "<<n_meas<<endl;
+    cout<<"Initialized: "<<is_initialized_<<endl;
     return;
   }
 
@@ -342,7 +343,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug_out) {
   
   *Xsig_aug_out = Xsig_aug;
   cout<<"Generated sigma points"<<endl;
-  cout<<Xsig_aug;
+  cout<<Xsig_aug<<endl;
 }
 
 void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t) {
