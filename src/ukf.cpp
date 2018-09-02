@@ -121,8 +121,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
   measurements.
   */
   const double time_conv = 1000000.;
-  n_meas_ += 1;
-  cout<<"Processing measurement "<<n_meas_<<endl;
   
   if (!is_initialized_) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
@@ -143,8 +141,6 @@ void UKF::ProcessMeasurement(MeasurementPackage measurement_pack) {
 
   double delta_t = (measurement_pack.timestamp_ - time_us_)/time_conv;
   UKF::Prediction(delta_t);
-  cout<<"Prediction at step "<<n_meas_<<" done. Proceed with update"<<endl;
-  cout<<"Sensor type: "<<measurement_pack.sensor_type_<<"("<<MeasurementPackage::LASER<<" - Laser, "<<MeasurementPackage::RADAR<<" - radar)"<<endl;
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
     UKF::UpdateLidar(measurement_pack);
@@ -221,12 +217,6 @@ void UKF::PredictRadar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_rad_
   *zpred_out = z_pred;
   *S_out = S;
   *Zsig_rad_out = Zsig;
-  cout<<"Predicted sigma points for radar at step Zsig_rad_out "<<n_meas_<<endl;
-  cout<<Zsig<<endl;
-  cout<<"Predicted radar measurement at step z+pred"<<n_meas_<<endl;
-  cout<<z_pred<<endl;
-  cout<<"Predicted radar delta matrix at step "<<n_meas_<<endl;
-  cout<<S<<endl;
 }
 
 void UKF::PredictLidar(VectorXd* zpred_out, MatrixXd* S_out, MatrixXd* Zsig_lidar_out) {
@@ -309,28 +299,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   PredictRadar(&zpred_rad_, &S_rad_, &Zsig_pred_rad_);
   VectorXd z = VectorXd(3);
   z << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], meas_package.raw_measurements_[2];
-  cout<<"Radar measurement for step "<<n_meas_<<endl;
-  cout<<z<<endl;
   //create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, 3);
   Tc.fill(0.0);
   //calculate cross correlation matrix
-  cout<<"Values of variables before cross correlation calc:"<<endl;
-  cout<<"weights:"<<endl;
-  cout<<weights_<<endl;
-  cout<<"Xsig_pred_"<<endl;
-  cout<<Xsig_pred_<<endl;
-  cout<<"x_ "<<endl;
-  cout<<x_<<endl;
-  cout<<"Zsig_pred_rad_ "<<endl;
-  cout<<Zsig_pred_rad_<<endl;
-  cout<<"zpred_rad_"<<endl;
-  cout<<zpred_rad_<<endl;
   for (int i=0; i<(2 * n_aug_ + 1); i++) {
       Tc += weights_(i)*(Xsig_pred_.col(i)-x_)*(Zsig_pred_rad_.col(i)-zpred_rad_).transpose();
   }
-  cout<<"Tc matrix for step "<<n_meas_<<endl;
-  cout<<Tc<<endl;
  
   //calculate Kalman gain K;
   MatrixXd K = Tc*S_rad_.inverse();
@@ -368,8 +343,6 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug_out) {
   }
   
   *Xsig_aug_out = Xsig_aug;
-  cout<<"Generated sigma points as step "<<n_meas_<<endl;
-  cout<<Xsig_aug<<endl;
 }
 
 void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t) {
@@ -421,8 +394,6 @@ void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, double delta_t) {
   }
 
   *Xsig_out = Xsig_pred;
-  cout<<"Predicted sigma points at step "<<n_meas_<<endl;
-  cout<<Xsig_pred<<endl;
 }
 
 void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out) {
@@ -451,8 +422,4 @@ void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out) {
 
   *x_out = x;
   *P_out = P;
-  cout<<"Predicted mean at step "<<n_meas_<<endl;
-  cout<<x<<endl;
-  cout<<"Predicted covariance at step "<<n_meas_<<endl;
-  cout<<P<<endl;
 }
